@@ -5,16 +5,16 @@ This is a collection of all the files I created or modified for my bachelor thes
 
 - iPad application, called calibration
 - opencv2 and structure frameworks for app
-- 
+
 ##reprojection
 
 - reader.cpp -> converts depth data in xml files and color files as png in xmls/ to RGBD pairs in data/, calib.xml is read with the intrinsic and extrinsic parameters
-- 
+
 ##svo
 
 - pipelineBA.cpp -> modified SVO starting point, reads png files in data/img/ color1.png to colorx.png. a starting number can be specified. saves the "associate_unscaled.txt" file with tx, ty, tz, qx, qy, qz, qw, depth file, rgb file on each line.  
 - src/reprojector.cpp -> modified to export depthunscaled.txt which is a parameter for "unscale".
-- 
+
 ##conversion
 
 - convBundle.cpp -> convert bundle.out files to associte.txt files (no scaling)

@@ -1,6 +1,6 @@
 # 3D Depth Sensor on Mobile Devices
-(Acquisition, Calibration and 3D
-Reconstruction)
+(Acquisition, Calibration and 3DReco nstruction)
+
 This is a collection of all the files I created or modified for my bachelor thesis.
 
 ##iOS

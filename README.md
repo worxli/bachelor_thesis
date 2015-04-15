@@ -21,7 +21,7 @@ This is a collection of all the files I created or modified for my bachelor thes
 - getcloudfromdepth.cpp -> reads "associate_unscaled.txt" and produces a ply file for each RGBD pair in (X,Y,Z) coordinates and a pointcloud.obj file with all depth maps combined. Takes scaling factor as an input
 - getcloudfromdepthOrigData.cpp -> same as getcloudfromdepth for example data with prescaled camera poses
 - unscale.cpp -> from "associcate_unscaled.txt" and "depthunscaled.txt" produces the scaled and for fastfusion arranged "associate.txt". if no parameter is specified, scaling factor is 1
-- 
+
 ##fastfusion
 
 - onlinefusionviewer_main.cpp -> modified fastfusion main file to read our "associate.txt"

@@ -1,1 +1,2 @@
-*.framework/
+iOS/Structure.framework/*
+iOS/opencv2.framework/*

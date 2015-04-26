@@ -3,6 +3,9 @@
 % use utf8 instead of latin1 when using LaTeX in windows
 \usepackage[latin1]{inputenc}
 \usepackage{listings}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{caption}
 
 \lstset{ %
 	language=C++,
@@ -55,8 +58,10 @@ ETH Zürich}
 
 \begin{abstract}
 	The introduction of Kinect has made depth sensors available to the consumer world. This made it possible for basically everyone to have a 3D scanner at home. Systems like Kinect Fusion would give the possibility to easily get a 3D reconstruction of everything in front of the lens. 
-	\newline
+	
 	The structure sensor by Occipital is the first mobile depth sensor and thus brings the possibility to have a mobile 3D scanner. We want to show that mobile depth data acquisition is possible and easy and also that this data performs well in 3D reconstruction applications.
+	\newline
+	Therefore a pipeline from data acquisition on a mobile device up to 3D reconstruction on a desktop computer has been developed.  
 \end{abstract}
 
 \setcounter{tocdepth}{1}
@@ -67,14 +72,15 @@ ETH Zürich}
 % Start writing here
 
 \chapter{Introduction}
-	We want to use a state of the art mobile device for depth data acquisition. For this we take advantage of the first mobile depth sensor, the structure sensor by Occipital\footnote{Occipital}. Further we will combine the depth sensor with the color camera of the device for texturing a 3D model.
-	\newline
-	We want to show that this data then can be used to create a 3D reconstruction. For this step we will use  camera tracking and motion estimation algorithms like semi-direct monocular visual odometry.
+	We want to use a state of the art mobile device for depth data acquisition. For this we take advantage of the first mobile depth sensor, the Structure sensor by Occipital\footnote{https://occipital.com/}. Further we will combine the depth sensor with the color camera of the device for texturing a 3D model.
+
+	We want to show that this data can then be used to create a 3D reconstruction. For this step we will use camera tracking and motion estimation algorithms and another pipeline for volumetric mapping.
 	
 	\section{Motivation}
-		We want to show that with a mobile device like a smartphone or a tablet, which today are omnipresent and a fairly low cost sensor we can perform high quality 3D scanning. This scans could be used in numerous applications in daily life. Scans of rooms can for example be used to measure their dimensions and check for furniture to fit in. \TODO{IKEA} On the other hand such a scan could also be used for real estate advertisements. A last intention is also to show that 3D reconstruction with depth data performs better and faster than such with color images only.
-
-	\TODO{fill page}		
+		We want to show that with mobile devices like smartphones or a tablets, which today are omnipresent and a fairly low cost sensor we can perform 3D scanning. This scans could be used in numerous applications in daily life. 
+		
+		Scans of rooms can for example be used to measure their dimensions and check for furniture to fit in. This is partly implemented in the IKEA Catalog application, whereas there no real measurements and room structure are available\footnote{https://play.google.com/store/apps/details?id=com.ikea.catalogue.android}. On the other hand such a scan could also be used for real estate advertisements, e.g. by showing reconstructed interiors depicted with real dimensions. In general every reconstructed object could also be printed by a 3D printer. A last intention is also to show that 3D reconstruction with depth data performs better and faster than such with color images only.
+		
 	\newpage
 
 	\section{Contribution}
@@ -111,7 +117,7 @@ ETH Zürich}
 		
 		\begin{figure}[h]
 			\centering
-			\includegraphics[width=\textwidth/3]{figures/ipad-sensor}
+			\includegraphics[width=0.75\textwidth]{figures/ipad-sensor}
 			\footnote{http://structure.io/static/occipital/images/v1/getstarted/ipad\_camera\_centered.jpg}
 			\caption{Structure sensor on iPad}
 			\label{fig:sensor}
@@ -123,7 +129,7 @@ ETH Zürich}
 		
 		\begin{figure}[h]
 			\centering
-			\includegraphics[width=\textwidth/2]{figures/acquisition}
+			\includegraphics[width=0.75\textwidth]{figures/acquisition}
 			\caption{Data acquisition screen}
 			\label{fig:acquisition}
 		\end{figure}
@@ -186,7 +192,7 @@ ETH Zürich}
 			 		
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.6\textwidth]{figures/pinhole}
+				\includegraphics[width=0.75\textwidth]{figures/pinhole}
 				\footnote{http://archimede.bibl.ulaval.ca/archimede/fichiers/25229/25229\_35.png}
 				\caption{Pinhole camera model}
 				\label{fig:pinhole}
@@ -217,7 +223,7 @@ ETH Zürich}
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.6\textwidth]{figures/distortion}
+				\includegraphics[width=0.75\textwidth]{figures/distortion}
 				\footnote{}
 				\caption{Distortion}
 				\label{fig:distortion}
@@ -262,14 +268,14 @@ ETH Zürich}
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.8\textwidth]{figures/calib1}
+				\includegraphics[width=0.75\textwidth]{figures/calib1}
 				\caption{IR and RGB images with the calibration pattern}
 				\label{fig:calib}
 			\end{figure}
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.8\textwidth]{figures/undist}
+				\includegraphics[width=0.75\textwidth]{figures/undist}
 				\caption{Undistorted IR and RGB images}
 				\label{fig:undist}
 			\end{figure}
@@ -283,7 +289,7 @@ ETH Zürich}
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.6\textwidth]{figures/epipolar}
+				\includegraphics[width=0.75\textwidth]{figures/epipolar}
 				\caption{Epipolar geometry}
 				\label{fig:epipolar}
 			\end{figure}			
@@ -342,7 +348,7 @@ ETH Zürich}
 		
 		Hence now, instead of recording infrared / color image pairs we change to record depth / color pairs. It must be ensured that the sensor is fixed at the same position relative to the color camera as with which the calibration was performed. The algorithm in \ref{ap:reprojection} is used alongside with the calibration results to project every pixel in the depth frame to its corresponding location in the color camera image plane.
 		
-		For every pixel this is done as follows, first we project it into its cameras coordinate system using the respective camera matrix (\ref{eq:todepthsystem}). Then we apply the rotation and translation obtained during stereo calibration to transform the point into the color camera coordinate system (\ref{eq:Prgb}). And last we back-project the point into the color camera frame to obtain its pixel coordinates using the color camera matrix (\ref{eq:prgb}), whereas the $z$ coordinate of the point in the color camera coordinate system represents its depth (\ref{eq:prgbdepth}).
+		For every pixel $p_{depth}$ this is done as follows, first we project it into its cameras coordinate system using the respective camera matrix (\ref{eq:todepthsystem}). Then we apply the rotation and translation obtained during stereo calibration to $P_{depth}$ to transform the point into the color camera coordinate system (\ref{eq:Prgb}). And last we back-project the point $P_{rgb}$ into the color camera frame to obtain its pixel coordinates using the color camera matrix (\ref{eq:prgb}). Besides the $z$ coordinate of the point in the color camera coordinate system represents the depth of $p_{rgb}$ (\ref{eq:prgbdepth}).
 		
 		Mathematically this procedure can be formulated the following way:   
 		\begin{equation}
@@ -362,28 +368,46 @@ ETH Zürich}
 		
 		\begin{equation}
 			\label{eq:prgbdepth}
-			depth of p_{rgb} = P_{rgb}.z
+			\text{depth of } p_{rgb} = P_{rgb}.z
 		\end{equation}
 		
-		Mathematically this operation is formulated the following way whereas we use these variables:\\
-		$p_{ir}:$ Point in the infrared camera frame\\
-		$P_{ir}$: 3D point in the infrared camera's coordinate system\\
-		$P_{rgb}$: 3D point in the color camera's coordinate system\\
-		$p_{rgb}$: Projection of $P_{rgb}$ onto the color camera frame\\
-
+%		\begin{figure}[h]
+%			\centering
+%			\includegraphics[width=0.75\textwidth]{figures/reprojection}
+%			\caption{Re-projected depth image}
+%			\label{fig:reprojection}
+%		\end{figure}
 		
 		\begin{figure}[h]
 			\centering
-			\includegraphics[width=0.8\textwidth]{figures/reprojection}
-			\caption{Re-projected depth image}
-			\label{fig:reprojection}
+			\begin{subfigure}[b]{0.3\textwidth}
+				\includegraphics[width=\textwidth]{figures/depth1}
+				\caption{Depth}
+				\label{fig:depth1}
+			\end{subfigure}
+			~
+			\begin{subfigure}[b]{0.3\textwidth}
+				\includegraphics[width=\textwidth]{figures/color1}
+				\caption{Color}
+				\label{fig:color1}
+			\end{subfigure}
+			~
+			\begin{subfigure}[b]{0.3\textwidth}
+				\includegraphics[width=\textwidth]{figures/mapped1}
+				\caption{Re-projected depth}
+				\label{fig:mapped1}
+			\end{subfigure}
+			\caption{Comparison between recorded depth and re-projected depth frame}
 		\end{figure}
 		
-		Because we project the depth values in the color frame we always lose some information. E.g. those values which would be projected outside the color frame can't be used anymore. We also see some aliasing effects throughout the entire image. This could be solved by a triangulation approach.
-		
-		\TODO{show depth and depth re-projected next to each other}
+		Because we project the depth values in the color frame we lose some information. E.g. those values which would be projected outside the color frame can't be used anymore, for that reason the back-projected depth frame has black borders. We also see some aliasing effects throughout the entire image due to sampling. This could be solved by a triangulation approach.
 
-		\TODO{Show RGB-D.}
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width=0.75\textwidth]{figures/both}
+			\caption{RGB-D pair as a 4-channel image}
+			\label{fig:rgbd}
+		\end{figure}	
 	
 \chapter{3D Reconstruction}
 	The first step of the 3D reconstruction is to obtain the camera trajectory. For this matter we use a semi-direct motion estimation approach. This pipeline will be slightly extended to output some more results which will be used in the scale estimation step. Due to the fact that the motion estimation is only based on color images we need this step to correct the discrepancy between the absolute metric of the depth map and the relative coordinates of the motion estimation. The final step is to perform the volumetric 3D mapping and texturing which is done by the fastfusion pipeline.
@@ -454,33 +478,37 @@ ETH Zürich}
 		In the fusing process the algorithm iterates over all pixels in an image, computes its 3D point and looks up its corresponding brick in the tree. Upon that the distance value in every concerning brick is updated. In the next step the geometry representation as an SDF needs to be converted to a triangle mesh. This type of storage is better because of a lower memory footprint. Here the Marching Cubes algorithm is applied and mesh cells are created which are associated with branches in the tree.
 		
 		The challenges which were to overcome when using fastfusion were mostly about the data format. For example the image scale needs to be specified, since the default scale is 5000 (1 millimeter is multiplied by 5000), we chose to also use this format. Moreover the pipeline takes the camera center as in \ref{eq:camera_center} and the camera rotation as input. Unfortunately this was not clearly specified, besides the rotation needed to be inverted first which resulted in some confusion.
-	
+		
 		\begin{figure}[h]
 			\centering
-			\includegraphics[width=0.75\textwidth]{figures/recon1}
-%			\caption{Re-projected depth image}
-			\label{fig:recon11}
+			\begin{subfigure}[b]{0.45\textwidth}
+				\includegraphics[width=\textwidth]{figures/recon1}
+				%			\caption{Re-projected depth image}
+				\label{fig:recon11}
+			\end{subfigure}
+			~
+			\begin{subfigure}[b]{0.45\textwidth}
+				\includegraphics[width=\textwidth]{figures/recon11}
+				%			\caption{Re-projected depth image}
+				\label{fig:recon12}
+			\end{subfigure}
+			\caption{reon1}
 		\end{figure}
 		
 		\begin{figure}[h]
 			\centering
-			\includegraphics[width=0.75\textwidth]{figures/recon11}
-			%			\caption{Re-projected depth image}
-			\label{fig:recon12}
-		\end{figure}	
-		
-		\begin{figure}[h]
-			\centering
-			\includegraphics[width=0.75\textwidth]{figures/recon2}
-			%			\caption{Re-projected depth image}
-			\label{fig:recon21}
-		\end{figure}
-		
-		\begin{figure}[h]
-			\centering
-			\includegraphics[width=0.75\textwidth]{figures/recon22}
-			%			\caption{Re-projected depth image}
-			\label{fig:recon22}
+			\begin{subfigure}[b]{0.45\textwidth}
+				\includegraphics[width=\textwidth]{figures/recon2}
+				%			\caption{Re-projected depth image}
+				\label{fig:recon21}
+			\end{subfigure}
+			~
+			\begin{subfigure}[b]{0.45\textwidth}
+				\includegraphics[width=\textwidth]{figures/recon22}
+				%			\caption{Re-projected depth image}
+				\label{fig:recon22}
+			\end{subfigure}
+			\caption{reon1}
 		\end{figure}	
 
 \chapter{App integration}
@@ -489,10 +517,31 @@ ETH Zürich}
 			
 \chapter{Conclusion}
 
+	The original idea of this thesis was to obtain data from the Structure sensor on a mobile device, calibrate the sensor and the camera to be able to combine the two inputs and finally perform a 3D reconstruction. Additional ideas were to add model fitting or some body pose estimation and extract the skeleton. And there was the possibility to integrate the depth acquisition process into the application of \cite{paper1}. 
 	
+	Whereas we were not able to acquire data on an Android device this worked smoothly on iOS devices due to the available development kit. The main challenge was to extract the recorded data from the device. Especially for the depth frames this was harder then expected because iOS has a different data security model than Android and doesn't allow to export every data format as easily. The resulting workflow of how to transfer the recorded data from the mobile device to the desktop device showed to be easy but could be improved by using a cloud storage or by an all on device approach like described in \ref{ch:future}.
+	
+	The calibration step was first done offline and ported to the mobile device. Fortunately this worked quite well, the on device calibration has the advantage that the application can easily be run on different devices and there is no additional configuration work to be done offline. Furthermore it has the advantage that the sensor can be moved arbitrarily between different recordings and only a quick calibration needs to be performed to update the configuration. Next, the depth re-projection proofed to be more cumbersome. First there were different challenges with the algorithm itself, like using the closest depth or eliminating the points which projected outside the image plane. Then re-projecting on the device didn't work, at least not real-time, for performance reasons. So this step needed to be performed offline which is unfortunate in particular with regard to the all on device approach. 
+	
+	Regarding the 3D reconstruction pipeline we note that the original intention was to optimistic. This step showed to be the most challenging and time consuming. Originally the dense visual odometry pipeline should have been used because it conforms with the fastfusion pipeline. Due to the fact that this pipeline was running on ROS\footnote{Robot Operating System} the usability was hindered. Therefore it was decided to use SVO instead, the drawback being that the camera motion estimation solely relies on color images and not on depth information.  As a result this the camera motion was estimated in some arbitrary coordinate system, whereas the depth coordinates are in millimeters. Therefore some scaling must be performed. The approach taken compares the estimated depth values with the real depth and computes an averaging scaling factor. This is then applied to the camera center translation, in practice this proofed to be accurate enough and good results could be obtained. The other drawback of using SVO was that it doesn't work as well in less textured environments. Thus care must be taken when choosing scenes.
+	
+	The additional tasks like model fitting and body pose estimation were left out because time constraints wouldn't have allowed a profound commitment to the matter. Instead the application described in \cite{paper1} was available in iOS and the depth data acquisition could be integrated. This integration nicely completed this work on depth sensors on mobile devices and allowed to show the practicality of mobile depth sensors by enhancing the current application.
+	
+	Conclusively I can wind up that the original objectives could not all be obtained due to unforeseen challenges and maybe too ambitious prospects. On the other hand different approaches have been tried and therefore and in general a lot about the matter has been learned. Besides, especially the integration of the sensor in an existing application encouraged the enthusiasm for further projects in the field.  
+
 
 \chapter{Future work}
+\label{ch:future}
 
+	In this chapter we describe possible future work or extensions to this project. Suggestions are based on efforts which didn't succeed, like for example the Android version. Also tasks which were out of scope because of time constraints will be addressed.
+	
+	At first we wanted to use Android as platform for the Structure sensor. The problem at the time was that not many devices supported USB host mode which was necessary for the sensor to communicate with the mobile device. Now that more devices support the feature it would be worth to again work on data acquisition for Android devices. The other problem with Android was that the integration with OpenNI and the NDK platform proved to be cumbersome, in the future where Occipital is supposed to release additional resources for Android this could also be solved.
+	
+	The second point concerns the pipeline. For usability reasons it would be great to everything in one application which runs on a mobile device. Therefore the data acquisition and camera calibration could be combined with a mobile visual odometry or a dense visual odometry approach. This could then be extended to also feature mobile reconstruction. In an next step consumer feature could also be added like measuring in the reconstruction or export to 3D file formats to be able to print the recorded object.
+	
+	An extension to the project which we didn't have time for is model fitting. In the present state everything seen be the camera and sensor is recorded and reconstructed. Still there are cases where you actually only want to record a subset of the viewed scene, e.g. if the background is irrelevant and can be discarded. For that reason we propose to integrate model fitting into the application. The first possibility is to perform a 2D model fitting and then only track and reconstruct the matched region. Another more robust approach is to do 3D model fitting. This has the advantage that there are less features required, thus it works better in less textured environments.  
+	
+	
 %And here we cite an external document~\cite{TestReference}.
 
 % This displays the bibliography for all cited external documents. All references have to be defined in the file references.bib and can then be cited from within this document.

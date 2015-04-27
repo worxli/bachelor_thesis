@@ -87,45 +87,46 @@ ETH Zürich}
 		The contributions of our work are the following:
 		
 			\begin{itemize}
-				\item An iOS application for the depth and color data acquisition which is based on the Structure SDK\footnote{Software development kit}. It allows viewing and recording of RGB-D\footnote{RGB color space with an added depth channel} data as well as camera calibration.
+				\item An iOS application for the depth and color data acquisition which is based on the Structure SDK\footnote{Software development kit}\footnote{http://structure.io/developers}. It allows viewing and recording of RGB-D\footnote{RGB color space with an added depth channel} data as well as camera calibration.
 				\item An offline pipeline which consists of two parts. The first part will convert the raw data recorded on the mobile device to RGB-D pairs using the calibration results. The second part estimates the camera motion and performs a 3D reconstruction.
 			\end{itemize}
 	
 	\section{Related work}
-		There have been different approaches on reconstruction, ranging between professional solutions, to consumer accessible products up to research projects. They also differ on their technical approach.  NextEngine\footnote{...} for example uses high precision laser scanning and KinectFusion uses its proper sensor which is a combination of different cameras. The third approach described here solely relies on color images. 
+		There have been different approaches on reconstruction, ranging between professional solutions, to consumer accessible products up to research projects. They also differ on their technical approach.  NextEngine for example uses high precision laser scanning and KinectFusion uses its proper sensor which is a combination of different cameras. The third approach described here solely relies on color images. 
 		
 		\subsection{Kinect Fusion}
-			Kinect Fusion \cite{...} is an application which provides 3D scanning and model creation based on the Kinect sensor\footnote{https://msdn.microsoft.com/en-us/library/dn188670.aspx} The Kinect sensor is a horizontal bar which features a RGB camera, a depth sensor and a multi-array microphone\footnote{http://blog.seattlepi.com/digitaljoystick/2009/06/01/e3-2009-microsoft-at-e3-several-metric-tons-of-press-releaseapalloza/}. The user can paint a scene with the Kinect camera and simultaneously see, and interact with, a detailed 3D model of the scene. Kinect Fusion runs on a Desktop PC with the sensor attached by wire. The reconstruction and estimation of the camera movement is based on the tracking of the camera through the depth map. Further there exist possibilities to color the constructed models or to apply shading.
+			Kinect Fusion \cite{...} is an application which provides 3D scanning and model creation based on the Kinect sensor\footnote{https://msdn.microsoft.com/en-us/library/dn188670.aspx}. The Kinect sensor is a horizontal bar which features a RGB camera, a depth sensor and a multi-array microphone\footnote{http://blog.seattlepi.com/digitaljoystick/2009/06/01/e3-2009-microsoft-at-e3-several-metric-tons-of-press-releaseapalloza/}. The user can paint a scene with the Kinect camera and simultaneously see, and interact with, a detailed 3D model of the scene. Kinect Fusion runs on a Desktop PC with the sensor attached by wire. The reconstruction and estimation of the camera movement is based on the tracking of the camera through the depth map. Further there exist possibilities to color the constructed models or to apply shading.
 			
-		\subsection{Live Metric 3D reconstruction on Mobile Phones}
+		\subsection{Live Metric 3D Reconstruction on Mobile Phones}
 			A paper by Tanskanen et al. \cite{paper1} proposes a complete on-device approach for 3D reconstruction. It uses a monocular hand-held device without any depth sensor. The reconstruction process is solely based on color images but the camera motion estimation takes advantage of the device own inertial sensors. Furthermore the paper proposes an efficient and accurate multi-resolution scheme for dense stereo matching which takes into account the restricted computational capabilities of the mobile device.
 			
-		\subsection{3D scanner}
+		\subsection{3D Scanner}
 			In the industry products like NextEngine 3 Scanner\footnote{http://www.nextengine.com/} have been available for some time. This scanner has a laser for high precision scanning and thus obtains far higher quality models than the approaches described before. It also features export to industry standard applications and allows easy printing of the scans. On the other side special equipment is needed which is considerably more expensive than consumer electronic devices.
 			
-			
-		Our approach is different insofar that we use generally available hardware as the iPad's color camera and an affordable depth sensor. However our data is quite similar to that \cite{kinect} with the difference that the data capturing is entirely done on a mobile device. In theory the reconstruction could also be done on the mobile device as described in chapter 5.
+		\subsection{Structure Sensor}	
+			Our approach is different insofar that we use generally available hardware as the iPad's color camera and an affordable depth sensor. However our data is quite similar to that of \cite{kinect} with the difference that the data capturing is entirely done on a mobile device. In theory the reconstruction could also be done on the mobile device as described in chapter 5.
 
 \chapter{Data Acquisition}
 
 	\footnotetext[1]{http://structure.io/developers}
 
-	In this chapter we give a detailed description on how the data acquisition on a mobile device is performed. In a first step we describe the use of the structure sensor, it's mechanism and how we obtain the data in a meaningful way. Then we describe the relation between the depth data and color images taken from the device camera. In a third step we will show how to perform camera calibration and combine the data to RGB-D image pairs. 
+	In this chapter we give a detailed description on how the data acquisition on a mobile device is performed. In a first step we describe the use of the Structure sensor, it's mechanism and how we obtain the data in a meaningful way. Then we describe the relation between the depth data and color images taken from the device camera. In a third step we will show how to perform camera calibration and combine the data to RGB-D image pairs. 
 
 	\section{Mobile Depth Acquisition}
-		The structure sensor is a so called structured-light 3D scanner. It possesses an infrared structured light projector and a corresponding camera system\footnotemark[1]. The projector projects a infrared mesh onto the scene, which the camera records from a slightly different angle. The three-dimensionally shaped surface produces a distorted mesh relative to the viewing camera which is then able to perform a geometric reconstruction of the surface shape.
+		The Structure sensor is a so called structured-light 3D scanner. It possesses an infrared structured light projector and a corresponding camera system\footnotemark[1]. The projector projects an infrared mesh onto the scene, which the camera records from a slightly different angle. The three-dimensionally shaped surface produces a distorted mesh relative to the viewing camera, which is then able to perform a geometric reconstruction of the surface shape.
 		
 		\begin{figure}[h]
 			\centering
 			\includegraphics[width=0.75\textwidth]{figures/ipad-sensor}
-			\footnote{http://structure.io/static/occipital/images/v1/getstarted/ipad\_camera\_centered.jpg}
-			\caption{Structure sensor on iPad}
+%			\footnote{http://structure.io/static/occipital/images/v1/getstarted/ipad\_camera\_centered.jpg}
+			\caption{Structure sensor on the iPad \ref{img:sensor}}
 			\label{fig:sensor}
 		\end{figure}
 
-		The sensor is connected to the device by cable, in our case to the iPad through the lightning port. We use the Structure SDK\footnotemark[1] as an interface between our application and the sensor hardware. This allows us to receive depth frames or infrared images at different scales. Unfortunately the maximum resolution of the depth sensor is only 640x480 pixels. Additionally, the SDK provides the possibility to get synchronized infrared/color or depth/color pairs. The color images are taken by the mobile device's own camera, e.g. the iPad's camera through the AVFoundation framework\footnote{https://developer.apple.com/library/mac/documentation/AVFoundation/Reference/AVFoundationFramework/index.html}. 
+		The sensor is connected to the device by cable, in our case to the iPad through the lightning port. We use the Structure SDK\footnotemark[1] as an interface between our application and the sensor hardware. This allows us to receive depth frames or infrared images at different scales. Unfortunately the maximum resolution of the depth sensor is only 640x480 pixels. Additionally, the SDK provides the possibility to get synchronized infrared/color or depth/color pairs. The color images are taken by the mobile device's own camera, e.g. the iPad's camera through the AVFoundation framework\footnote{https://developer.apple.com/library/mac/documentation/AVFoundation/Reference/
+		AVFoundationFramework/index.html}. 
 		
-		Originally we wanted to perform the mobile data acquisition on an Android device. This had the advantage that we could rely on standard libraries like OpenNI \footnote{openni} and OpenCV \footnote{opencv}. The drawback was that applications on Android are written in Java and the C++ libraries are only accessible through the native development kit (NKD) \footnote{ndk} interface. Unfortunately we weren't able to make the structure sensor work on this platform, thus we decided to work on the iOS platform where a SDK for the sensor was provided.
+		Originally we wanted to perform the mobile data acquisition on an Android device. This had the advantage that we could rely on standard libraries like OpenNI \footnote{http://structure.io/openni} and OpenCV \footnote{http://opencv.org/}. The drawback was that applications on Android are written in Java and the C++ libraries are only accessible through the native development kit (NDK) \footnote{https://developer.android.com/tools/sdk/ndk/index.html} interface. Unfortunately we weren't able to make the structure sensor work on this platform, thus we decided to work on the iOS platform where a SDK for the sensor was provided.
 		
 		\begin{figure}[h]
 			\centering
@@ -134,12 +135,12 @@ ETH Zürich}
 			\label{fig:acquisition}
 		\end{figure}
 		
-		On the data acquisition screen we see the infrared image on the top left, the color image on the top right, the depth map on the bottom left, whereas red/yellow pixels indicate a close location and represent blue/black represent the far away areas. Finally we can also see the surface normals on the bottom right.
+		On the data acquisition screen (Figure \ref{fig:acquisition}) we see the infrared image on the top left, the color image on the top right, the depth map on the bottom left, whereas red/yellow pixels indicate a close location and blue/black pixels represent the far away areas. Finally we can also see the surface normals on the bottom right.
 		
 
 	\section{RGB and Depth Camera Calibration}
 
-		For the camera calibration we make use of the pinhole model which will briefly be explained here. The next section describes how the depth sensor and the device's RGB camera are calibrated. This will provide the camera matrices and lens distortion coefficients for both cameras. After the single camera calibration for both cameras the third section explains how these results can be used to perform a stereo camera calibration, which finds the extrinsic parameters. 
+		For the camera calibration we make use of the pinhole camera model which will briefly be explained here. The next section describes how the depth sensor and the device's RGB camera are calibrated. This will provide the camera matrices and lens distortion coefficients for both cameras. After the single camera calibration for both cameras, the third section explains how these results can be used to perform a stereo camera calibration, which finds the extrinsic parameters. 
 		
 		\subsection{Pinhole Camera Model}
 		
@@ -152,7 +153,7 @@ ETH Zürich}
 			
 %			\begin{pmatrix}X\\Y\\Z\end{pmatrix}
 
-			where $P = (X,Y,Z)^T$ is a 3D point in the world coordinate space and $p = (u,v,1)^T$ is the projection of $P$ in the camera frame in pixels.
+			Here $P = (X,Y,Z)^T$ is a 3D point in the world coordinate space and $p = (u,v,1)^T$ is the projection of $P$ in the camera frame in pixels.
 			
 			\begin{equation}
 				K =
@@ -188,7 +189,7 @@ ETH Zürich}
 			 			\label{eq:t}
 			 		\end{equation}
 			 		
-			 		We will refer to $[R|t]$ as the matrix of extrinsic parameters. It is used to describe the camera motion around a static scene in our case. In a more general application it would also describe the rigid motion of an object in front of a stationary camera.  
+			 		We will refer to $[R|t]$ as the matrix of extrinsic parameters. It is used to describe the camera motion around a static scene. In a more general application the extrinsic parameters also describe the rigid motion of an object in front of a stationary camera.  
 			 		
 			\begin{figure}[h]
 				\centering
@@ -198,7 +199,7 @@ ETH Zürich}
 				\label{fig:pinhole}
 			\end{figure}
 			
-			\newpage
+%			\newpage
 			
 			Real lenses usually have some radial and tangential distortion. To account for this the distortion coefficients $k_1$ to $k_6$ and $p_1$ and $p_2$ are introduced and the camera model is extended as follows.
 			
@@ -230,7 +231,7 @@ ETH Zürich}
 			\end{figure}
 		
 		\subsection{Single Camera Calibration}
-			We record a set of images of a specific pattern from different viewpoints to do the camera calibration. We choose a chessboard pattern which is a standard choice for calibration because corners can easily be detected. Now a corner detection algorithm can search for a specified amount of corners. Thus we find the projection of the scene points on the image plane. Because we assume a chessboard we know the location of the corners in a respective coordinate system (which is assumed to be the world coordinate system for the calibration). Accordingly we have several images and thus several equations and we can solve for \ref{eq:model} and find \ref{eq:K}, \ref{eq:R} and \ref{eq:t}.  
+			We record a set of images of a specific pattern from different viewpoints to do the camera calibration. We choose a chessboard pattern which is a standard choice for calibration because corners can easily be detected. A corner detection algorithm can search for a specified amount of corners, which are the projection of the scene points on the image plane. Because we assume a chessboard we know the location of the corners in a respective coordinate system (which is assumed to be the world coordinate system for the calibration). Accordingly we have several images and thus several equations and we can solve for \ref{eq:model} and find \ref{eq:K}, \ref{eq:R} and \ref{eq:t}.  
 			
 			Furthermore the calibration process will also find the distortion coefficients by minimizing
 			
@@ -261,9 +262,9 @@ ETH Zürich}
 			\end{figure}			
 			
 			
-			We do this calibration separately for the color camera and the infrared sensor. Typically a good calibration has a RMS of the back-projection error of about 0.1 and 1 pixels. We obtained a RMS of around 0.2 pixels for the color camera and a little worse result of about 1.2 for the infrared sensor. We were able to keep the error down by for example fixing the principal point of the image. 
+			We do this calibration separately for the color camera and the infrared sensor. Typically a good calibration has a RMS of the back-projection error of about 0.1 to 1 pixels. We obtained a RMS of around 0.2 pixels for the color camera and a little worse result of about 1.2 pixels for the infrared sensor. We were able to keep the error low by for example fixing the principal point of the image. 
 			
-			We know found the camera matrix and the distortion coefficients for both cameras. In our case this is only an intermediate result, we will continue with the stereo calibration where we can use the single camera calibration results as input.
+			We know found the camera matrix and the distortion coefficients for both cameras. In our case this is only an intermediate result, we will continue with the stereo calibration where the single camera calibration results can be used as input parameters.
 		
 			
 			\begin{figure}[h]
@@ -283,9 +284,9 @@ ETH Zürich}
 			\todo{better images}
 		
 		\subsection{Stereo Calibration}
-			In the stereo calibration we try to estimate the extrinsic parameters. So we want to find the rotation and translation between the two camera centers. We will use the precomputed camera matrices and intrinsic parameters from the previous section as well as synchronized RGB-D pairs as input. 
+			In the stereo calibration the extrinsic parameters are estimated. We want to find the rotation and translation between the two camera centers. We will use the precomputed camera matrices and intrinsic parameters from the previous section as well as synchronized RGB-D pairs as input. 
 			
-			Stereo correspondence is usually found using epipolar geometry. Two cameras recording the same scene from different viewpoints span the epipolar plane. It is bounded by the line from the camera center $c_0$ through the projection of p onto the image plane to p and vice versa for camera center $c_1$. The third bounding line is the connection between the two camera centers through the epipoles $e_0$ and $e_1$. Along that we get a pair of epipolar lines, which are the line segments $x_0$ to $e_0$ and $x_1$ to $e_1$ extended to infinity. 
+			Stereo correspondence is usually found using epipolar geometry. Two cameras recording the same scene from different viewpoints span the epipolar plane. It is bounded by the line from the camera center $c_0$ through the projection of p onto the image plane to p and vice versa for camera center $c_1$. The third bounding line is the connection between the two camera centers through the epipoles $e_0$ and $e_1$. Along that, we get a pair of epipolar lines which are the line segments $x_0$ to $e_0$ and $x_1$ to $e_1$, extended to infinity. 
 			
 			\begin{figure}[h]
 				\centering
@@ -299,7 +300,7 @@ ETH Zürich}
 			\begin{equation}
 				E = [t]_{\times}R
 			\end{equation} 
-			which can be used to recover the camera motion. The exact procedure is omitted here but using several images it is possible to compute the rotation matrix $R$ and translation vector $t$ \cite{cvbook}.		
+			which can be used to recover the camera motion. The exact procedure is omitted here but using several images it is possible to compute the rotation matrix $R$ and translation vector as described in  $t$ \cite{cvbook}.		
 			
 %			\begin{figure}[h]
 %				\centering
@@ -320,7 +321,7 @@ ETH Zürich}
 %			
 %			Where $R_{rgb}$ and $t_{rgb}$ are the extrinsic parameters of the color camera and vice versa for the infrared camera. Thus $R$ and $t$ define the transformation from the infrared coordinate system to the color camera coordinate system.
 			
-			The algorithm uses the calibration points to construct the epipolar plane. Furthermore we pass the intrinsics computed in the previous single camera calibration as input to reduce the dimension of the parameter space. Additionally some flags can be passed to the algorithm, e.g. to fix the intrinsics, to further restrict the solution. The quality of the stereo calibration can be controlled by looking at the RMS like in the single camera calibration. Here the error is usually a little higher but values between 0.5 and 1.5 yielded good results.
+			The algorithm uses the calibration points obtained before to construct the epipolar plane. Furthermore we pass the intrinsics computed in the previous single camera calibration as input to reduce the dimension of the parameter space. Additionally flags can be passed to the algorithm, e.g. to fix the intrinsics, to further restrict the solution. The quality of the stereo calibration can be controlled by looking at the RMS like in the single camera calibration. Here the error is usually a little higher but values between 0.5 and 1.5 pixels yielded good results.
 						
 %			\begin{equation} \label{eq:prgb}
 %				P_{rgb} = R_{rgb} * p_{rgb} + t_{rgb}
@@ -341,16 +342,16 @@ ETH Zürich}
 %				p_{rbg} = K_{rgb} * R * K_{ir}^{-1} * p_{ir} + t 
 %			\end{equation}
 
-	\TODO{side by side of rectified image pair?}
+%	\TODO{side by side of rectified image pair?}
 		
 	\section{Depth re-projection}
 		The last step in the data acquisition is to use the results obtained in the previous steps and re-project the depth onto the color image. Thus we want to create an RGB-D pair with depth and color information.  For storage reasons we will not create a four channel image but use a three channel RGB and a single channel depth image.
 		
-		Hence now, instead of recording infrared / color image pairs we change to record depth / color pairs. It must be ensured that the sensor is fixed at the same position relative to the color camera as with which the calibration was performed. The algorithm in \ref{ap:reprojection} is used alongside with the calibration results to project every pixel in the depth frame to its corresponding location in the color camera image plane.
+		From now on, instead of recording infrared/color image pairs, we record depth/color pairs. It must be ensured that the sensor is fixed at the same position relative to the color camera as with which the calibration was performed. The algorithm in \ref{ap:reprojection} is used alongside with the calibration results to project every pixel in the depth frame to its corresponding location in the color camera image plane.
 		
 		For every pixel $p_{depth}$ this is done as follows, first we project it into its cameras coordinate system using the respective camera matrix (\ref{eq:todepthsystem}). Then we apply the rotation and translation obtained during stereo calibration to $P_{depth}$ to transform the point into the color camera coordinate system (\ref{eq:Prgb}). And last we back-project the point $P_{rgb}$ into the color camera frame to obtain its pixel coordinates using the color camera matrix (\ref{eq:prgb}). Besides the $z$ coordinate of the point in the color camera coordinate system represents the depth of $p_{rgb}$ (\ref{eq:prgbdepth}).
 		
-		Mathematically this procedure can be formulated the following way:   
+		Mathematically this procedure can be formulated in the following way:   
 		\begin{equation}
 			\label{eq:todepthsystem}
 			P_{depth} = K_{ir}^{-1}\cdot p_{depth}
@@ -382,13 +383,13 @@ ETH Zürich}
 			\centering
 			\begin{subfigure}[b]{0.3\textwidth}
 				\includegraphics[width=\textwidth]{figures/depth1}
-				\caption{Depth}
+				\caption{Depth frame}
 				\label{fig:depth1}
 			\end{subfigure}
 			~
 			\begin{subfigure}[b]{0.3\textwidth}
 				\includegraphics[width=\textwidth]{figures/color1}
-				\caption{Color}
+				\caption{Color image}
 				\label{fig:color1}
 			\end{subfigure}
 			~
@@ -400,7 +401,7 @@ ETH Zürich}
 			\caption{Comparison between recorded depth and re-projected depth frame}
 		\end{figure}
 		
-		Because we project the depth values in the color frame we lose some information. E.g. those values which would be projected outside the color frame can't be used anymore, for that reason the back-projected depth frame has black borders. We also see some aliasing effects throughout the entire image due to sampling. This could be solved by a triangulation approach.
+		Because we project the depth values into the color frame we lose some information. E.g. the values which would be projected outside the color frame can't be used anymore, for that reason the back-projected depth frame has black borders. We also see some aliasing effects throughout the entire image which is a sampling problem. This could be solved by a triangulation approach.
 
 		\begin{figure}[h]
 			\centering
@@ -410,41 +411,41 @@ ETH Zürich}
 		\end{figure}	
 	
 \chapter{3D Reconstruction}
-	The first step of the 3D reconstruction is to obtain the camera trajectory. For this matter we use a semi-direct motion estimation approach. This pipeline will be slightly extended to output some more results which will be used in the scale estimation step. Due to the fact that the motion estimation is only based on color images we need this step to correct the discrepancy between the absolute metric of the depth map and the relative coordinates of the motion estimation. The final step is to perform the volumetric 3D mapping and texturing which is done by the fastfusion pipeline.
+	The first step of the 3D reconstruction is to obtain the camera trajectory. For this matter we use a semi-direct motion estimation approach. This pipeline will be slightly extended to output some more results which will be used in the scale estimation step. Due to the fact that the motion estimation is only based on color images we need a scaling step to correct the discrepancy between the absolute metric of the depth map and the relative coordinates of the motion estimation. The final step is to perform the volumetric 3D mapping and texturing which is done by the Fastfusion pipeline.
 
 	\section{Camera Tracking - SVO}
-		For the camera trajectory estimation SVO \cite{svo} (Semi-Direct Monocular Visual Odometry) is used. This is a pipeline that implements motion estimation in am semi-direct fashion. It uses two parallel threads, one for estimating the camera motion and the second one for mapping. 
+		For the camera trajectory estimation Semi-Direct Monocular Visual Odometry \cite{svo} (SVO) is used. This is a pipeline that implements motion estimation in a semi-direct fashion. It uses two parallel threads, one for estimating the camera motion and the second for mapping. 
 		
-		The motion estimation thread implements the semi-direct approach, which means that it estimates motion directly form intensity values. In a non-direct approach this would be done through robust feature matching. In the first step it initializes the camera pose based on sparse model-based image alignment, it minimizes the photometric error between pixels of different frames projecting to the same 3D location. Then feature-patches are aligned to refine the 2D coordinates of the reprojected points. Finally pose and structure are refined by minimizing the reprojection error introduced in the feature alignment step.
+		The motion estimation thread implements the semi-direct approach, which means that it estimates motion directly form intensity values, instead of using robust feature matching as in non-direct approaches. In the first step it initializes the camera pose based on sparse model-based image alignment, it minimizes the photometric error between pixels of different frames projecting to the same 3D location. Then feature-patches are aligned to refine the 2D coordinates of the reprojected points. Finally pose and structure are refined by minimizing the reprojection error introduced in the feature alignment step.
 		
-		The mapping thread initializes a probabilistic depth-filter for every 2D feature for which the corresponding 3D is to be estimated. When a new keyframe is selected in regions of the image with few 3D to 2D correspondences new depth-filters are initialized. The filters are initialized with a large uncertainty in depth and then updated at every subsequent frame until its uncertainty becomes small enough when a new 3D point is inserted in the depth map.
+		The mapping thread initializes a probabilistic depth-filter for every 2D feature for which the corresponding 3D is to be estimated. When a new keyframe is selected in regions of the image with few 3D to 2D correspondences, new depth-filters are initialized. The filters are initialized with a large uncertainty in depth and then updated at every subsequent frame until its uncertainty becomes small enough, whenever a new 3D point is inserted in the depth map.
 		
-		As mentioned before the pipeline is extended, it now also outputs the $(u,v)^T$ coordinates and the corresponding $Z$ coordinate of every tracked feature. In other words we obtain the 2D feature's coordinates and the estimated depth. Unchanged is the rest of the pipeline which outputs the camera pose for every frame. 
+		As mentioned before the pipeline is extended, it also outputs the $(u,v)^T$ coordinates and the corresponding $Z$ coordinate of every tracked feature. In other words, we obtain the 2D feature's coordinates and the estimated depth. Unchanged is the rest of the pipeline which outputs the camera pose for every frame. 
 		
-		Several challenges needed to be overcome when using the SVO, because there were several datasets where no camera poses could be estimated. On one side it was discovered that the device movement largely impacted the performance of SVO. Because of compatibility reasons depth maps were saved as XML files on the iPad which strongly influenced the frame rate at which datasets could be recorded. Thus moving the camera and sensor slowly and steady was required. On the other hand good lighting conditions and a complex scene were also crucial to get good results. The preceding point is especially important because the quality of the recorded image was not high (VGA). Hence higher resolution images could improve the results but might need better hardware.
+		Several challenges needed to be overcome when using the SVO pipeline, because there were several datasets where no camera poses could be estimated. On one side it was discovered that the device movement largely impacted the performance of SVO. Because of compatibility reasons depth maps were saved as XML files on the iPad which strongly influenced the frame rate at which datasets could be recorded. Thus moving the camera and sensor slowly and steady was required. On the other hand good lighting conditions and a complex scene were also crucial to get good results. The preceding point is especially important because the quality of the recorded image was not high (VGA). Hence higher resolution images could improve the results but might need better hardware.
 		
 %	\section{Camera tracking - bundler / visualsfm}
 %		Operates with sift, no consecutive frames, matches all images. Takes longer, but also bad performance
 	
 	\section{Scale Estimation}
-		Up to this point we know the camera pose for every frame and the coordinates of the tracked features over all the frames. The arising problem is that the estimated 3D coordinates of the features are in a coordinate system with a relative scale. On the other hand the depth values recorded by the structure sensor are saved based on an absolute scale, in millimeters. This means the relative coordinates must be scaled to match the absolute coordinates.
+		Up to this point we know the camera pose for every frame and the coordinates of the tracked features over all frames. The arising problem is that the estimated 3D coordinates of the features are in a coordinate system with a relative scale. On the other hand the depth values recorded by the structure sensor are saved based on an absolute scale, in millimeters. This means that the relative coordinates must be scaled to match the absolute coordinates.
 		
-		That means that for a feature at position $(X,Y,Z)^T$ which is projected to $(u_i,v_i,z_i)^T$
-		in the camera frame, $z_i$ usually doesn't equal the $z$ value of $P_{rgb}$ in \ref{eq:Prgb}, here denoted as $d_i$. Therefore we need to introduce a scale factor which corrects the depth difference. We used a simple least squares approach:
+		Thus for a feature at position $(X,Y,Z)^T$ which is projected to $(z_iu_i,z_iv_i,z_i)^T$
+		in the camera frame, $z_i$ usually doesn't equal the $z$ value of $P_{rgb}$ in \ref{eq:Prgb}, here denoted as $d_i$. Therefore we need to introduce a scale factor which corrects the depth difference. We used a simple least squares approach to approximate s:
 		
 		\begin{equation}
 			\sum_{i=0}^{pixels \cdot images} (d_i - s\cdot z_i)\cdot z_i = 0
 		\end{equation} 
 		
-		Subsequently we will scale every camera pose by this factor $s$. Because the camera pose is computed by
+		Subsequently we scale every camera pose by the factor $s$. Because the camera pose is computed by
 		\begin{equation}
 			\label{eq:camera_center}
 			c_j = -R_j^T\cdot t_j
 		\end{equation}
-		where $c_j$ is the camera center of the $j$'th camera and $[R_j|t_j]$ is the camera to world coordinate system transformation matrix. Therefore it is enough to scale the vector $t_j$ by a factor of $s$ to account for the false depth.
+		where $c_j$ is the camera center of the $j$'th camera and $[R_j|t_j]$ is the camera to world coordinate system transformation matrix. Therefore it is enough to scale the vector $t_j$ by a factor of $s$ to account for the wrong depth.
 		
 	\section{Pointcloud}
-		To obtain  a visual confirmation that the scale estimation succeeded, the RGB-D pairs were converted to pointclouds. The model from \ref{eq:model} is used along with the camera intrinsics to project to the camera coordinate system. Then the rotation and the translation of the camera pose are used as extrinsic parameters and the image is projected to the world coordinate system. Equation \ref{eq:model_inv} shows how the pinhole model is reversed.
+		To obtain  a visual confirmation that the scale estimation succeeded, the RGB-D pairs were converted to pointclouds. The model from \ref{eq:model} is used along with the camera intrinsics to project to the camera coordinate system. Then the rotation and the translation of the camera pose are used as extrinsic parameters and the image is projected to the world coordinate system. Equation \ref{eq:model_inv} shows how the pinhole model of \ref{eq:model} is used in reverse.
 		
 		\begin{equation}
 			P_i = R_{rgb}^{T}(K_{rgb}^{-1}p_i - t_{rgb})
@@ -453,7 +454,7 @@ ETH Zürich}
 		where $p_i$ is the vector 
 		$(u_{i}d_{i},v_{i}d_{i},d_{i})^T$.
 		Here $u$ and $v$ are the pixel coordinates in the color camera frame with depth $d$ in the depth frame.
-		Accordingly the color of the pixel with depth $d$ is the RGB value at $(u_i,v_i)^T$.
+		Accordingly the color of pixel $p_i$ with depth $d$ is the RGB value at $(u_i,v_i)^T$.
 		
 		\begin{figure}[h]
 			\centering
@@ -465,31 +466,35 @@ ETH Zürich}
 		\begin{figure}[h]
 			\centering
 			\includegraphics[width=0.75\textwidth]{figures/ptcl2}
-			\caption{Pointclouds in MeshViewer}
+			\caption{Pointclouds visualized in MeshViewer}
 			\label{fig:pointcloud2}
 		\end{figure}
 		
 	
-	\section{Dense reconstruction}
-		The final step of the reconstruction process is the volumetric mapping. Here the fastfusion \cite{fastfusion} pipeline is used because it doesn't need a special sensor, as the Kinect Fusion, thus works with our data. Furthermore it runs on the CPU and doesn't need any special GPU, hence it can be run on any desktop computer or laptop.
+	\section{Dense Reconstruction}
+		The final step of the reconstruction process is the volumetric mapping. Here the Fastfusion \cite{fastfusion} pipeline is used because it doesn't need a special sensor, as the Kinect Fusion, thus works with our data. Furthermore it runs on the CPU and doesn't need any special GPU, hence it can be run on any desktop computer or laptop.
 		
-		Fustfusion uses an octree data structure to perform the volumetric meshing and mapping. Moreover it incorporates two different algorithms, the first for data fusion and the second for incremental meshing, each running in their own thread.  The geometry of the reconstruction is represented using a signed distance function (SDF) which is saved in an octree. This choice was made because usually most of the space is either free or unknown. The octree is then able to save different distances at different levels in the tree, thus obtaining several resolutions. In the visualization the highest resolution is used and the lower resolutions serve as fall back. Furthermore every node in the tree contains a small cubic volume called brick which itself contains $8^3$ voxels. Lastly the voxel stores the distance, weight and color.
+		Fustfusion uses an octree data structure to perform the volumetric meshing and mapping. Moreover it incorporates two different algorithms, the first for data fusion and the second for incremental meshing, each running in their own thread.  The geometry of the reconstruction is represented using a signed distance function (SDF) which is saved in an octree. This choice was made because usually most of the space is either free or unknown. The octree is then able to save different distances at different levels in the tree, thus obtaining several resolutions. In the visualization the highest resolution is used and the lower resolutions serve as fallback. Furthermore every node in the tree contains a small cubic volume called brick which itself contains $8^3$ voxels. Lastly the voxel stores the distance, weight and color of a point.
 		
 		In the fusing process the algorithm iterates over all pixels in an image, computes its 3D point and looks up its corresponding brick in the tree. Upon that the distance value in every concerning brick is updated. In the next step the geometry representation as an SDF needs to be converted to a triangle mesh. This type of storage is better because of a lower memory footprint. Here the Marching Cubes algorithm is applied and mesh cells are created which are associated with branches in the tree.
 		
-		The challenges which were to overcome when using fastfusion were mostly about the data format. For example the image scale needs to be specified, since the default scale is 5000 (1 millimeter is multiplied by 5000), we chose to also use this format. Moreover the pipeline takes the camera center as in \ref{eq:camera_center} and the camera rotation as input. Unfortunately this was not clearly specified, besides the rotation needed to be inverted first which resulted in some confusion.
+		The challenges which were to overcome when using Fastfusion were mostly about the data format. For example the image scale needs to be specified, since the default scale is 5000 (1 millimeter is multiplied by 5000), we chose to also use this format, thus every depth frame needed to be converted accordingly. Moreover the pipeline takes the camera center as in \ref{eq:camera_center} and the camera rotation as input. Unfortunately this was not clearly specified, besides the rotation needed to be inverted first which resulted in some confusion.
 		
 		\begin{figure}[h]
 			\centering
-			\begin{subfigure}[b]{0.45\textwidth}
+			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon1}
-				%			\caption{Re-projected depth image}
+				\caption{Desk scene front view}
 				\label{fig:recon11}
 			\end{subfigure}
-			~
-			\begin{subfigure}[b]{0.45\textwidth}
+			\begin{subfigure}[b]{0.8\textwidth}
+				\includegraphics[width=\textwidth]{figures/recon1}
+				\caption{Desk scene front view}
+				\label{fig:recon11}
+			\end{subfigure}		
+			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon11}
-				%			\caption{Re-projected depth image}
+				\caption{Desk scene from above}
 				\label{fig:recon12}
 			\end{subfigure}
 			\caption{reon1}
@@ -497,19 +502,25 @@ ETH Zürich}
 		
 		\begin{figure}[h]
 			\centering
-			\begin{subfigure}[b]{0.45\textwidth}
+			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon2}
-				%			\caption{Re-projected depth image}
+				\caption{Room front view}
 				\label{fig:recon21}
 			\end{subfigure}
-			~
-			\begin{subfigure}[b]{0.45\textwidth}
+			\begin{subfigure}[b]{0.8\textwidth}
+				\includegraphics[width=\textwidth]{figures/recon2}
+				\caption{Room front view}
+				\label{fig:recon21}
+			\end{subfigure}
+			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon22}
-				%			\caption{Re-projected depth image}
+				\caption{}
 				\label{fig:recon22}
 			\end{subfigure}
 			\caption{reon1}
 		\end{figure}	
+		
+		\todo{new images}
 
 \chapter{App integration}
 		
@@ -519,13 +530,13 @@ ETH Zürich}
 
 	The original idea of this thesis was to obtain data from the Structure sensor on a mobile device, calibrate the sensor and the camera to be able to combine the two inputs and finally perform a 3D reconstruction. Additional ideas were to add model fitting or some body pose estimation and extract the skeleton. And there was the possibility to integrate the depth acquisition process into the application of \cite{paper1}. 
 	
-	Whereas we were not able to acquire data on an Android device this worked smoothly on iOS devices due to the available development kit. The main challenge was to extract the recorded data from the device. Especially for the depth frames this was harder then expected because iOS has a different data security model than Android and doesn't allow to export every data format as easily. The resulting workflow of how to transfer the recorded data from the mobile device to the desktop device showed to be easy but could be improved by using a cloud storage or by an all on device approach like described in \ref{ch:future}.
+	Whereas we were not able to acquire data on an Android device this worked smoothly on iOS devices due to the available development kit. The main challenge was to extract the recorded data from the device. Especially for the depth frames this was harder then expected because iOS has a different data security model than Android and doesn't allow export of every data format as easily. The resulting workflow of how to transfer the recorded data from the mobile device to the desktop device showed to be easy but could be improved by using a cloud storage or by an all on device approach as described in \ref{ch:future}.
 	
-	The calibration step was first done offline and ported to the mobile device. Fortunately this worked quite well, the on device calibration has the advantage that the application can easily be run on different devices and there is no additional configuration work to be done offline. Furthermore it has the advantage that the sensor can be moved arbitrarily between different recordings and only a quick calibration needs to be performed to update the configuration. Next, the depth re-projection proofed to be more cumbersome. First there were different challenges with the algorithm itself, like using the closest depth or eliminating the points which projected outside the image plane. Then re-projecting on the device didn't work, at least not real-time, for performance reasons. So this step needed to be performed offline which is unfortunate in particular with regard to the all on device approach. 
+	The calibration step was first done offline and then ported to the mobile device. Fortunately this worked quite well, the on device calibration has the advantage that the application can easily be run on different devices and there is no additional configuration work to be done offline. Furthermore it has the advantage that the sensor can be moved arbitrarily between different recordings and only a quick two step calibration needs to be performed to update the configuration. Next, the depth re-projection proofed to be more cumbersome. First there were different challenges with the algorithm itself, like using the closest depth or eliminating the points which projected outside the image plane. Then re-projecting on the device didn't work, at least not real-time, for performance reasons. So this step needed to be performed offline which is unfortunate in particular with regard to the all on device approach. 
 	
-	Regarding the 3D reconstruction pipeline we note that the original intention was to optimistic. This step showed to be the most challenging and time consuming. Originally the dense visual odometry pipeline should have been used because it conforms with the fastfusion pipeline. Due to the fact that this pipeline was running on ROS\footnote{Robot Operating System} the usability was hindered. Therefore it was decided to use SVO instead, the drawback being that the camera motion estimation solely relies on color images and not on depth information.  As a result this the camera motion was estimated in some arbitrary coordinate system, whereas the depth coordinates are in millimeters. Therefore some scaling must be performed. The approach taken compares the estimated depth values with the real depth and computes an averaging scaling factor. This is then applied to the camera center translation, in practice this proofed to be accurate enough and good results could be obtained. The other drawback of using SVO was that it doesn't work as well in less textured environments. Thus care must be taken when choosing scenes.
+	Regarding the 3D reconstruction pipeline we note that the original intention was too optimistic. This step showed to be the most challenging and time consuming. Originally the dense visual odometry pipeline should have been used because it conforms with the Fastfusion pipeline. Due to the fact that this pipeline was running on ROS\footnote{Robot Operating System} the usability was hindered. Therefore it was decided to use SVO instead, the drawback being that the camera motion estimation solely relies on color images and not on depth information.  As a result the camera motion was estimated in some arbitrary coordinate system, whereas the depth coordinates are stored in millimeters. Therefore scaling must be performed. The approach taken compares the estimated depth values with the real depth and computes an averaging scaling factor. This is then applied to the camera center translation, in practice this proofed to be accurate enough and good results could be obtained. The other drawback of using SVO was that it doesn't work as well in less textured environments. Thus care must be taken when choosing scenes.
 	
-	The additional tasks like model fitting and body pose estimation were left out because time constraints wouldn't have allowed a profound commitment to the matter. Instead the application described in \cite{paper1} was available in iOS and the depth data acquisition could be integrated. This integration nicely completed this work on depth sensors on mobile devices and allowed to show the practicality of mobile depth sensors by enhancing the current application.
+	The additional tasks like model fitting and body pose estimation were left out because time constraints would not have allowed a profound commitment to the matter. Instead the application described in \cite{paper1} was made available in iOS and the depth data acquisition could be integrated. This integration nicely completed this work on depth sensors on mobile devices and allowed to show the practicality of mobile depth sensors by enhancing the current application.
 	
 	Conclusively I can wind up that the original objectives could not all be obtained due to unforeseen challenges and maybe too ambitious prospects. On the other hand different approaches have been tried and therefore and in general a lot about the matter has been learned. Besides, especially the integration of the sensor in an existing application encouraged the enthusiasm for further projects in the field.  
 
@@ -535,11 +546,11 @@ ETH Zürich}
 
 	In this chapter we describe possible future work or extensions to this project. Suggestions are based on efforts which didn't succeed, like for example the Android version. Also tasks which were out of scope because of time constraints will be addressed.
 	
-	At first we wanted to use Android as platform for the Structure sensor. The problem at the time was that not many devices supported USB host mode which was necessary for the sensor to communicate with the mobile device. Now that more devices support the feature it would be worth to again work on data acquisition for Android devices. The other problem with Android was that the integration with OpenNI and the NDK platform proved to be cumbersome, in the future where Occipital is supposed to release additional resources for Android this could also be solved.
+	At first we wanted to use Android as platform for the Structure sensor. The problem at the time was that not many devices supported USB host mode which was necessary for the sensor to communicate with the mobile device. Now that more devices support the feature it would be worth to work on data acquisition for Android devices again. The other problem with Android was that the integration with OpenNI and the NDK platform proved to be cumbersome, in the future where Occipital is supposed to release additional resources for Android this could also be solved.
 	
-	The second point concerns the pipeline. For usability reasons it would be great to everything in one application which runs on a mobile device. Therefore the data acquisition and camera calibration could be combined with a mobile visual odometry or a dense visual odometry approach. This could then be extended to also feature mobile reconstruction. In an next step consumer feature could also be added like measuring in the reconstruction or export to 3D file formats to be able to print the recorded object.
+	The second point concerns the pipeline. For usability reasons it would be great to have it in one application which runs on a mobile device. Therefore the data acquisition and camera calibration could be combined with a mobile visual odometry or a dense visual odometry approach. This could then be extended to also feature mobile reconstruction. In an next step consumer feature could also be added like measuring in the reconstruction or export to 3D file formats to be able to print the recorded object.
 	
-	An extension to the project which we didn't have time for is model fitting. In the present state everything seen be the camera and sensor is recorded and reconstructed. Still there are cases where you actually only want to record a subset of the viewed scene, e.g. if the background is irrelevant and can be discarded. For that reason we propose to integrate model fitting into the application. The first possibility is to perform a 2D model fitting and then only track and reconstruct the matched region. Another more robust approach is to do 3D model fitting. This has the advantage that there are less features required, thus it works better in less textured environments.  
+	An extension to the project which we didn't have time for is model fitting. In the present state everything seen by the camera and sensor is recorded and reconstructed. Still there are cases where you actually only want to record a subset of the viewed scene, e.g. if the background is irrelevant and can be discarded. For that reason we propose to integrate model fitting into the application. The first possibility is to perform a 2D model fitting and then only track and reconstruct the matched region. Another more robust approach is to do 3D model fitting. This has the advantage that there are less features required, thus it works better in less textured environments.  
 	
 	
 %And here we cite an external document~\cite{TestReference}.
@@ -552,17 +563,13 @@ ETH Zürich}
 \appendix
 \chapter{Code}
 
-	\section{Depth reprojection}
+	\section{Depth Re-projection}
 		\label{ap:reprojection}
 		\begin{lstlisting}
 for (int row = 0; row < depthRaw.rows; ++row) {
 	for (int col = 0; col < depthRaw.cols; ++col) { 
-	
-		// not mapped depth image
-		ptrDepth[depthRaw.cols * row + col] = 
-		(uint16_t)ptrOrig[depthRaw.cols * row + col];
 		
-		// get depth for remapping
+		// get depth for re-projection
 		double depthVal = (double)ptrOrig[depthRaw.cols*row + col];
 		
 		// Map depthcam depth to 3D point
@@ -598,7 +605,7 @@ for (int row = 0; row < depthRaw.rows; ++row) {
 		if(px_rgbcam - depthRaw.cols < 0 
 		&& py_rgbcam - depthRaw.rows < 0) {
 			if(depth_rgbcam == 0 || (uint16_t)nDepth < depth_rgbcam) {
-				depth_rgbcam = 5*(uint16_t)nDepth;
+				depth_rgbcam = 5*(uint16_t)nDepth; //scale by 5 for fastfusion
 			}
 		}   
 	}

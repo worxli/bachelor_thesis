@@ -94,7 +94,7 @@ void c2w(int counter)
         {
 
           std::stringstream depthImg, colorImg, colorParams;
-          depthImg << "/home/worxli/Datasets/data/output/depth" << counter << ".png";
+          depthImg << "/home/worxli/Datasets/data/dense/mapped" << counter << ".png";
           std::cout << "reading image " << depthImg.str() << std::endl;
           cv::Mat depth(cv::imread(depthImg.str().c_str(), CV_LOAD_IMAGE_UNCHANGED));
           depth = depth*5;

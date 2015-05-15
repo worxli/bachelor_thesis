@@ -6,6 +6,13 @@
 \usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{caption}
+\usepackage{hyperref}
+%\usepackage{url}
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage{pdfpages}
+\usepackage[style=numeric,subentry,backend=bibtex]{biblatex}
+\addbibresource{references.bib}
 
 \lstset{ %
 	language=C++,
@@ -51,6 +58,8 @@ ETH Zürich}
 
 \cleardoublepage
 
+\includepdf[pages={1}]{declaration.pdf}
+
 \begin{acknowledgements}
 	I would like to thank my supervisor Amael Delaunoy for his support and great help I received during the weekly meetings. I also want to thank Professor Marc Pollefeys for offering me the opportunity to write my bachelor thesis at the Computer Vision and Geometry Group.
 \end{acknowledgements}
@@ -72,7 +81,7 @@ ETH Zürich}
 % Start writing here
 
 \chapter{Introduction}
-	We want to use a state of the art mobile device for depth data acquisition. For this we take advantage of the first mobile depth sensor, the Structure sensor by Occipital\footnote{https://occipital.com/}. Further we will combine the depth sensor with the color camera of the device for texturing a 3D model.
+	We want to use a state of the art mobile device for depth data acquisition. For this we take advantage of the first mobile depth sensor, the Structure sensor by Occipital\footnote{https://occipital.com}. Further we will combine the depth sensor with the color camera of the device for texturing a 3D model.
 
 	We want to show that this data can then be used to create a 3D reconstruction. For this step we will use camera tracking and motion estimation algorithms and another pipeline for volumetric mapping.
 	
@@ -95,38 +104,36 @@ ETH Zürich}
 		There have been different approaches on reconstruction, ranging between professional solutions, to consumer accessible products up to research projects. They also differ on their technical approach.  NextEngine for example uses high precision laser scanning and KinectFusion uses its proper sensor which is a combination of different cameras. The third approach described here solely relies on color images. 
 		
 		\subsection{Kinect Fusion}
-			Kinect Fusion \cite{...} is an application which provides 3D scanning and model creation based on the Kinect sensor\footnote{https://msdn.microsoft.com/en-us/library/dn188670.aspx}. The Kinect sensor is a horizontal bar which features a RGB camera, a depth sensor and a multi-array microphone\footnote{http://blog.seattlepi.com/digitaljoystick/2009/06/01/e3-2009-microsoft-at-e3-several-metric-tons-of-press-releaseapalloza/}. The user can paint a scene with the Kinect camera and simultaneously see, and interact with, a detailed 3D model of the scene. Kinect Fusion runs on a Desktop PC with the sensor attached by wire. The reconstruction and estimation of the camera movement is based on the tracking of the camera through the depth map. Further there exist possibilities to color the constructed models or to apply shading.
+			Kinect Fusion \cite{kinect} is an application which provides 3D scanning and model creation based on the Kinect sensor \cite{kinect1}. The Kinect sensor is a horizontal bar which features a RGB camera, a depth sensor and a multi-array microphone \cite{kinect2}. The user can paint a scene with the Kinect camera and simultaneously see, and interact with, a detailed 3D model of the scene. Kinect Fusion runs on a Desktop PC with the sensor attached by wire. The reconstruction and estimation of the camera movement is based on the tracking of the camera through the depth map. Further there exist possibilities to color the constructed models or to apply shading.
 			
 		\subsection{Live Metric 3D Reconstruction on Mobile Phones}
 			A paper by Tanskanen et al. \cite{paper1} proposes a complete on-device approach for 3D reconstruction. It uses a monocular hand-held device without any depth sensor. The reconstruction process is solely based on color images but the camera motion estimation takes advantage of the device own inertial sensors. Furthermore the paper proposes an efficient and accurate multi-resolution scheme for dense stereo matching which takes into account the restricted computational capabilities of the mobile device.
 			
 		\subsection{3D Scanner}
-			In the industry products like NextEngine 3 Scanner\footnote{http://www.nextengine.com/} have been available for some time. This scanner has a laser for high precision scanning and thus obtains far higher quality models than the approaches described before. It also features export to industry standard applications and allows easy printing of the scans. On the other side special equipment is needed which is considerably more expensive than consumer electronic devices.
+			In the industry products like NextEngine 3 Scanner\footnote{http://www.nextengine.com} have been available for some time. This scanner has a laser for high precision scanning and thus obtains far higher quality models than the approaches described before. It also features export to industry standard applications and allows easy printing of the scans. On the other side special equipment is needed which is considerably more expensive than consumer electronic devices.
 			
 		\subsection{Structure Sensor}	
 			Our approach is different insofar that we use generally available hardware as the iPad's color camera and an affordable depth sensor. However our data is quite similar to that of \cite{kinect} with the difference that the data capturing is entirely done on a mobile device. In theory the reconstruction could also be done on the mobile device as described in chapter 5.
 
 \chapter{Data Acquisition}
 
-	\footnotetext[1]{http://structure.io/developers}
-
 	In this chapter we give a detailed description on how the data acquisition on a mobile device is performed. In a first step we describe the use of the Structure sensor, it's mechanism and how we obtain the data in a meaningful way. Then we describe the relation between the depth data and color images taken from the device camera. In a third step we will show how to perform camera calibration and combine the data to RGB-D image pairs. 
 
 	\section{Mobile Depth Acquisition}
-		The Structure sensor is a so called structured-light 3D scanner. It possesses an infrared structured light projector and a corresponding camera system\footnotemark[1]. The projector projects an infrared mesh onto the scene, which the camera records from a slightly different angle. The three-dimensionally shaped surface produces a distorted mesh relative to the viewing camera, which is then able to perform a geometric reconstruction of the surface shape.
+		The Structure sensor is a so called structured-light 3D scanner. It possesses an infrared structured light projector and a corresponding camera system \cite{structure_dev}. The projector projects an infrared mesh onto the scene, which the camera records from a slightly different angle. The three-dimensionally shaped surface produces a distorted mesh relative to the viewing camera, which is then able to perform a geometric reconstruction of the surface shape.
+
+		The sensor is connected to the device by cable, in our case to the iPad through the lightning port. We use the Structure SDK \cite{structure_dev} as an interface between our application and the sensor hardware. This allows us to receive depth frames or infrared images at different scales. Unfortunately the maximum resolution of the depth sensor is only 640x480 pixels. Additionally, the SDK provides the possibility to get synchronized infrared/color or depth/color pairs. The color images are taken by the mobile device's own camera, e.g. the iPad's camera through the AVFoundation framework\footnote{https://developer.apple.com/library/mac/documentation/
+			AVFoundation/Reference/AVFoundationFramework/index.html}. 
 		
 		\begin{figure}[h]
 			\centering
 			\includegraphics[width=0.75\textwidth]{figures/ipad-sensor}
-%			\footnote{http://structure.io/static/occipital/images/v1/getstarted/ipad\_camera\_centered.jpg}
-			\caption{Structure sensor on the iPad \ref{img:sensor}}
+			\caption[structure sensor]{Structure sensor on the iPad\footnotemark{}}
 			\label{fig:sensor}
 		\end{figure}
-
-		The sensor is connected to the device by cable, in our case to the iPad through the lightning port. We use the Structure SDK\footnotemark[1] as an interface between our application and the sensor hardware. This allows us to receive depth frames or infrared images at different scales. Unfortunately the maximum resolution of the depth sensor is only 640x480 pixels. Additionally, the SDK provides the possibility to get synchronized infrared/color or depth/color pairs. The color images are taken by the mobile device's own camera, e.g. the iPad's camera through the AVFoundation framework\footnote{https://developer.apple.com/library/mac/documentation/AVFoundation/Reference/
-		AVFoundationFramework/index.html}. 
+		\footnotetext{http://structure.io/static/occipital/images/v1/getstarted/ipad\_camera\_centered.jpg}		
 		
-		Originally we wanted to perform the mobile data acquisition on an Android device. This had the advantage that we could rely on standard libraries like OpenNI \footnote{http://structure.io/openni} and OpenCV \footnote{http://opencv.org/}. The drawback was that applications on Android are written in Java and the C++ libraries are only accessible through the native development kit (NDK) \footnote{https://developer.android.com/tools/sdk/ndk/index.html} interface. Unfortunately we weren't able to make the structure sensor work on this platform, thus we decided to work on the iOS platform where a SDK for the sensor was provided.
+		Originally we wanted to perform the mobile data acquisition on an Android device. This had the advantage that we could rely on standard libraries like OpenNI\footnote{http://structure.io/openni} and OpenCV\footnote{http://opencv.org}. The drawback was that applications on Android are written in Java and the C++ libraries are only accessible through the NDK\footnote{Native Development Kit} \footnote{https://developer.android.com/tools/sdk/ndk/index.html} interface. Unfortunately we weren't able to make the structure sensor work on this platform, thus we decided to work on the iOS platform where a SDK for the sensor was provided.
 		
 		\begin{figure}[h]
 			\centering
@@ -144,7 +151,7 @@ ETH Zürich}
 		
 		\subsection{Pinhole Camera Model}
 		
-			The pinhole camera model\footnote{http://docs.opencv.org/modules/calib3d/doc/camera\_calibration\_and\_3d\_reconstruction.html} describes the mapping of a 3D point to a 2D image. Equation \ref{eq:model} explains the basic relationship between a 3D point and its projection onto the image plane by using perspective transformation.
+			The pinhole camera model\cite{pinhole} describes the mapping of a 3D point to a 2D image. Equation \ref{eq:model} explains the basic relationship between a 3D point and its projection onto the image plane by using perspective transformation.
 			
 			\begin{equation}
 				s p = K(RP + t)
@@ -194,11 +201,11 @@ ETH Zürich}
 			\begin{figure}[h]
 				\centering
 				\includegraphics[width=0.75\textwidth]{figures/pinhole}
-				\footnote{http://archimede.bibl.ulaval.ca/archimede/fichiers/25229/25229\_35.png}
-				\caption{Pinhole camera model}
+				\caption[]{Pinhole camera model\footnotemark}
 				\label{fig:pinhole}
 			\end{figure}
 			
+			\footnotetext{http://archimede.bibl.ulaval.ca/archimede/fichiers/25229/25229\_35.png}
 %			\newpage
 			
 			Real lenses usually have some radial and tangential distortion. To account for this the distortion coefficients $k_1$ to $k_6$ and $p_1$ and $p_2$ are introduced and the camera model is extended as follows.
@@ -224,14 +231,21 @@ ETH Zürich}
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.75\textwidth]{figures/distortion}
-				\footnote{}
+				\includegraphics[width=0.8\textwidth]{figures/distortion}
 				\caption{Distortion}
 				\label{fig:distortion}
+				
 			\end{figure}
 		
 		\subsection{Single Camera Calibration}
 			We record a set of images of a specific pattern from different viewpoints to do the camera calibration. We choose a chessboard pattern which is a standard choice for calibration because corners can easily be detected. A corner detection algorithm can search for a specified amount of corners, which are the projection of the scene points on the image plane. Because we assume a chessboard we know the location of the corners in a respective coordinate system (which is assumed to be the world coordinate system for the calibration). Accordingly we have several images and thus several equations and we can solve for \ref{eq:model} and find \ref{eq:K}, \ref{eq:R} and \ref{eq:t}.  
+			
+						\begin{figure}[h]
+							\centering
+							\includegraphics[width=0.35\textwidth]{figures/pixel_undist}
+							\caption{Undistortion}
+							\label{fig:calib}
+						\end{figure}
 			
 			Furthermore the calibration process will also find the distortion coefficients by minimizing
 			
@@ -252,36 +266,27 @@ ETH Zürich}
 			
 			\begin{equation}
 				L(r) = 1 + k_1r+k_2r^2+...
-			\end{equation}
+			\end{equation}			
 			
-			\begin{figure}[h]
-				\centering
-				\includegraphics[width=0.2\textwidth]{figures/pixel_undist}
-				\caption{Undistortion}
-				\label{fig:calib}
-			\end{figure}			
-			
-			
-			We do this calibration separately for the color camera and the infrared sensor. Typically a good calibration has a RMS of the back-projection error of about 0.1 to 1 pixels. We obtained a RMS of around 0.2 pixels for the color camera and a little worse result of about 1.2 pixels for the infrared sensor. We were able to keep the error low by for example fixing the principal point of the image. 
+			We do this calibration separately for the color camera and the infrared sensor. Typically a good calibration has a RMS of the back-projection error of about 0.1 to 1 pixels. We obtained a RMS of around 0.1 to 0.2 pixels for the color camera and the infrared sensor. We were able to keep the error low by for example fixing the principal point of the image. 
 			
 			We know found the camera matrix and the distortion coefficients for both cameras. In our case this is only an intermediate result, we will continue with the stereo calibration where the single camera calibration results can be used as input parameters.
 		
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.75\textwidth]{figures/calib1}
-				\caption{IR and RGB images with the calibration pattern}
+				\includegraphics[width=0.75\textwidth]{figures/calib2}
+				\caption{IR and RGB images with calibration pattern}
 				\label{fig:calib}
 			\end{figure}
 			
 			\begin{figure}[h]
 				\centering
-				\includegraphics[width=0.75\textwidth]{figures/undist}
-				\caption{Undistorted IR and RGB images}
+				\includegraphics[width=0.75\textwidth]{figures/undist2}
+				\caption{Infrared image and undistorted RGB image}
 				\label{fig:undist}
 			\end{figure}
-			
-			\todo{better images}
+
 		
 		\subsection{Stereo Calibration}
 			In the stereo calibration the extrinsic parameters are estimated. We want to find the rotation and translation between the two camera centers. We will use the precomputed camera matrices and intrinsic parameters from the previous section as well as synchronized RGB-D pairs as input. 
@@ -291,9 +296,11 @@ ETH Zürich}
 			\begin{figure}[h]
 				\centering
 				\includegraphics[width=0.75\textwidth]{figures/epipolar}
-				\caption{Epipolar geometry}
+				\caption[]{Epipolar geometry\footnotemark}
 				\label{fig:epipolar}
-			\end{figure}			
+			\end{figure}	
+			
+			\footnotetext{Figure from \cite{cvbook}}		
 			
 			The epipolar lines are the intersection of the image planes with the epipolar plane. Then using the epipolar constraint we can define the essential matrix
 			
@@ -472,6 +479,7 @@ ETH Zürich}
 		
 	
 	\section{Dense Reconstruction}
+	\label{ch:reconstruction}
 		The final step of the reconstruction process is the volumetric mapping. Here the Fastfusion \cite{fastfusion} pipeline is used because it doesn't need a special sensor, as the Kinect Fusion, thus works with our data. Furthermore it runs on the CPU and doesn't need any special GPU, hence it can be run on any desktop computer or laptop.
 		
 		Fustfusion uses an octree data structure to perform the volumetric meshing and mapping. Moreover it incorporates two different algorithms, the first for data fusion and the second for incremental meshing, each running in their own thread.  The geometry of the reconstruction is represented using a signed distance function (SDF) which is saved in an octree. This choice was made because usually most of the space is either free or unknown. The octree is then able to save different distances at different levels in the tree, thus obtaining several resolutions. In the visualization the highest resolution is used and the lower resolutions serve as fallback. Furthermore every node in the tree contains a small cubic volume called brick which itself contains $8^3$ voxels. Lastly the voxel stores the distance, weight and color of a point.
@@ -484,20 +492,20 @@ ETH Zürich}
 			\centering
 			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon1}
-				\caption{Desk scene front view}
+				\caption{Desk front view}
 				\label{fig:recon11}
 			\end{subfigure}
 			\begin{subfigure}[b]{0.8\textwidth}
-				\includegraphics[width=\textwidth]{figures/recon1}
-				\caption{Desk scene front view}
+				\includegraphics[width=\textwidth]{figures/recon12}
+				\caption{Desk side view}
 				\label{fig:recon11}
 			\end{subfigure}		
 			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon11}
-				\caption{Desk scene from above}
+				\caption{Desk from above}
 				\label{fig:recon12}
 			\end{subfigure}
-			\caption{reon1}
+			\caption{Reconstruction example of desk with computers}
 		\end{figure}
 		
 		\begin{figure}[h]
@@ -508,22 +516,79 @@ ETH Zürich}
 				\label{fig:recon21}
 			\end{subfigure}
 			\begin{subfigure}[b]{0.8\textwidth}
-				\includegraphics[width=\textwidth]{figures/recon2}
-				\caption{Room front view}
+				\includegraphics[width=\textwidth]{figures/recon21}
+				\caption{Room side-above view}
 				\label{fig:recon21}
 			\end{subfigure}
 			\begin{subfigure}[b]{0.8\textwidth}
 				\includegraphics[width=\textwidth]{figures/recon22}
-				\caption{}
+				\caption{Room front-above view}
 				\label{fig:recon22}
 			\end{subfigure}
-			\caption{reon1}
+			\caption{Reconstruction example of room}
 		\end{figure}	
-		
-		\todo{new images}
 
-\chapter{App integration}
+
+\chapter{App Integration}
+\label{ch:app}
 		
+	In this chapter we describe how the depth sensor was integrated into the application described in \cite{paper1}. The Structure SDK was added to the application such that the depth sensor data can be accessed. The data is streamed live in the background, but depth frames are only saved when a keyframe is selected. Then the reconstruction data consisting of color images, depth frames and the intrinsic and extrinsic parameters for every color / depth pair can be saved on the device and be uploaded to the cloud.
+	
+	First a visual inertial scale estimation is performed. For this a 3D gyroscope and an accelerometer which come with the device are used, therefore they produce substantial time-dependent and device-specific offsets. Thus the scale needs to be estimated using the current world to camera frame rotation and the current earth-fixed velocity and position are estimated using the inertial sensors. To start the scale estimation, independent motion segments are estimated for visual and inertial based means. After a significant displacement has been determined the two methods are compared and an initial scale is estimated. This procedure is repeated until the scale estimation converges. 
+	
+	Thereupon the inertial position is updated with visual measurements and upon movements of the device the tracking can be achieved through fusion of inertial and visual estimates. The tracking is initialized with two keyframes where ORB features are extracted and matched. After that, relative pose optimization is performed and point matches are triangulated. Upon arrival of a new camera frame, FAST corners are extracted and matched with the previous map. This allows to refine the pose estimate from the inertial sensor and to correct drift. 
+	
+	In our case a new keyframe is added to the map whenever we choose to record one. Upon this we also record a depth frame from the Structure sensor. The keyframe is added to the map and the new observations can be used to match new camera frames. At the same time the depth frame is saved in a buffer for further offline usage. Finally the recorded color images and depth frames are saved to the device combined with the respective pose estimates. In the upcoming offline step we need to perform an additional scale estimation to account for the discrepancy between the pose estimated using visual and inertial measures and the absolute pose. This step is necessary because the depth frame has the depth values stored in millimeters. Finally we use the same step as in \ref{ch:reconstruction} to do the 3D reconstruction.
+		
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile22}
+			\caption{Desk from above}
+%			\label{fig:recon21}
+		\end{subfigure}
+		~
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile23}
+			\caption{Desk from side}
+%			\label{fig:recon21}
+		\end{subfigure}
+		~
+		\vspace{0.2in}
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile21}
+			\caption{Desk from view}
+%			\label{fig:recon22}
+		\end{subfigure}
+		\begin{subfigure}[b]{0.5\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile24}
+			\caption{Corresponding reconstruction without depth sensor information}
+			%			\label{fig:recon22}
+		\end{subfigure}
+		\caption{Example reconstruction with good results}
+	\end{figure}	
+	
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile31}
+			%				\caption{Depth frame}
+			%				\label{fig:depth1}
+		\end{subfigure}
+		~
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile32}
+			%				\caption{Color image}
+			%				\label{fig:color1}
+		\end{subfigure}
+		~
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{figures/mobile33}
+			%				\caption{Re-projected depth}
+			%				\label{fig:mapped1}
+		\end{subfigure}
+		\caption{Example reconstruction with bad results}
+	\end{figure}	
 			
 			
 \chapter{Conclusion}
@@ -548,7 +613,7 @@ ETH Zürich}
 	
 	At first we wanted to use Android as platform for the Structure sensor. The problem at the time was that not many devices supported USB host mode which was necessary for the sensor to communicate with the mobile device. Now that more devices support the feature it would be worth to work on data acquisition for Android devices again. The other problem with Android was that the integration with OpenNI and the NDK platform proved to be cumbersome, in the future where Occipital is supposed to release additional resources for Android this could also be solved.
 	
-	The second point concerns the pipeline. For usability reasons it would be great to have it in one application which runs on a mobile device. Therefore the data acquisition and camera calibration could be combined with a mobile visual odometry or a dense visual odometry approach. This could then be extended to also feature mobile reconstruction. In an next step consumer feature could also be added like measuring in the reconstruction or export to 3D file formats to be able to print the recorded object.
+	The second point concerns the pipeline. For usability reasons it would be great to have it in one application which runs on a mobile device. Therefore the data acquisition and camera calibration could be combined with a mobile visual odometry or a dense visual odometry approach. This could then be extended to also feature mobile reconstruction.	In chapter \ref{ch:app} we described how the previous point was practically solved. It must be added that the future work would be to perform the scale estimation live on the device and to incorporate the recorded depth frames into the fusion thread. In an next step, consumer features could also be added like measuring in the reconstruction or export to 3D file formats to be able to print the recorded object. 
 	
 	An extension to the project which we didn't have time for is model fitting. In the present state everything seen by the camera and sensor is recorded and reconstructed. Still there are cases where you actually only want to record a subset of the viewed scene, e.g. if the background is irrelevant and can be discarded. For that reason we propose to integrate model fitting into the application. The first possibility is to perform a 2D model fitting and then only track and reconstruct the matched region. Another more robust approach is to do 3D model fitting. This has the advantage that there are less features required, thus it works better in less textured environments.  
 	
@@ -556,9 +621,11 @@ ETH Zürich}
 %And here we cite an external document~\cite{TestReference}.
 
 % This displays the bibliography for all cited external documents. All references have to be defined in the file references.bib and can then be cited from within this document.
-\bibliographystyle{splncs}
-\bibliography{references}
+%\bibliographystyle{splncs}
+%\bibliography{references}
 
+\clearpage
+\printbibliography
 % This creates an appendix chapter, comment if not needed.
 \appendix
 \chapter{Code}
